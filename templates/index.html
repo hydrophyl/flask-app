@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask App</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to My Flask App</h1>
+    </header>
+    <main>
+        <p>This is the main content area.</p>
+        <button id="sendEventButton">Send Event</button>
+        <button id="pauseButton">Pause</button>
+        <button id="resumeButton">Resume</button>
+        <p id="response"></p>
+    </main>
+    <footer>
+        <p>&copy; 2023 My Flask App</p>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('my_response', function(msg) {
+            document.getElementById('response').innerText = msg.data;
+        });
+
+        document.getElementById('sendEventButton').addEventListener('click', function() {
+            socket.emit('start_long_task');
+        });
+
+        document.getElementById('pauseButton').addEventListener('click', function() {
+            socket.emit('pause_task');
+        });
+
+        document.getElementById('resumeButton').addEventListener('click', function() {
+            socket.emit('resume_task');
+        });
+    </script>
+</body>
+</html>
