@@ -29,10 +29,10 @@ def handle_my_event(json):
     socketio.emit('my_response', {'data': 'Event received!'})
 
 def long_task():
-    for i in range(10):
+    for i in range(100):
         pause_event.wait()  # Wait if the task is paused
-        socketio.sleep(1)
-        socketio.emit('my_response', {'data': f'Task running: {i+1} seconds'})
+        socketio.sleep(0.1)
+        socketio.emit('my_response', {'data': f'Task running: {i*10} seconds'})
     print('Task completed!')
     socketio.emit('my_response', {'data': 'Task completed!'})
 
