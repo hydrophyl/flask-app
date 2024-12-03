@@ -3,13 +3,15 @@ from gevent import monkey
 monkey.patch_all()
 from flask import Flask, render_template
 from flask_socketio import SocketIO
-from threading import Event
+from gevent.event import Event
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 socketio = SocketIO(app, async_mode='gevent')
 
 pause_event = Event()
+task_running = False
 
 @app.route('/')
 def index():
@@ -29,16 +31,23 @@ def handle_my_event(json):
     socketio.emit('my_response', {'data': 'Event received!'})
 
 def long_task():
+    global task_running
+    task_running = True
     for i in range(100):
         pause_event.wait()  # Wait if the task is paused
         socketio.sleep(0.1)
         socketio.emit('my_response', {'data': f'Task running: {i*10} seconds'})
     print('Task completed!')
     socketio.emit('my_response', {'data': 'Task completed!'})
+    task_running = False
 
 @socketio.on('start_long_task')
 def start_long_task():
-    global pause_event
+    global pause_event, task_running
+    if task_running:
+        socketio.emit('my_response', {'data': 'Task already running!'})
+        print('Task already running')
+        return
     pause_event.set()  # Ensure the task is not paused
     socketio.start_background_task(target=long_task)
     print('Task started')
